@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Waktu pembuatan: 13 Okt 2025 pada 11.31
+-- Waktu pembuatan: 16 Okt 2025 pada 10.31
 -- Versi server: 10.4.32-MariaDB
 -- Versi PHP: 8.2.12
 
@@ -51,11 +51,21 @@ INSERT INTO `absensi` (`id`, `pertemuan_id`, `mahasiswa_id`, `status`, `updated_
 CREATE TABLE `audit_logs` (
   `id` bigint(20) NOT NULL,
   `user_id` int(11) DEFAULT NULL,
-  `action` varchar(100) NOT NULL,
+  `action` varchar(50) NOT NULL COMMENT 'Kode aksi standar (e.g., LOGIN_SUCCESS, UPDATE_NILAI)',
+  `entity_type` varchar(50) DEFAULT NULL COMMENT 'Jenis entitas (e.g., mahasiswa, dosen)',
+  `entity_id` varchar(50) DEFAULT NULL COMMENT 'ID unik dari entitas (e.g., NIM, NIDN)',
   `metadata` text DEFAULT NULL,
-  `ip` varchar(45) DEFAULT NULL,
+  `ip_address` varchar(45) DEFAULT NULL COMMENT 'Alamat IP pengguna',
   `created_at` timestamp NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data untuk tabel `audit_logs`
+--
+
+INSERT INTO `audit_logs` (`id`, `user_id`, `action`, `entity_type`, `entity_id`, `metadata`, `ip_address`, `created_at`) VALUES
+(1, 1, 'login', NULL, NULL, '{\"username\":\"admin\",\"role\":\"admin\"}', '::1', '2025-10-16 08:05:32'),
+(2, 2, 'login', 'mahasiswa', '2', '{\"username\":\"mdrilanang@gmail.com\",\"role\":\"mahasiswa\"}', '::1', '2025-10-16 08:28:07');
 
 -- --------------------------------------------------------
 
@@ -146,7 +156,8 @@ CREATE TABLE `krs_detail` (
 
 INSERT INTO `krs_detail` (`id`, `krs_id`, `jadwal_id`, `kode_matkul`, `nama_matkul`, `sks`) VALUES
 (1, 1, 1, '3KOM40125', 'KEAMANAN DATA DAN JARINGAN', 3),
-(2, 1, 3, '3KOM40126', 'PEMODELAN DAN SIMULASI', 3);
+(2, 1, 3, '3KOM40126', 'PEMODELAN DAN SIMULASI', 3),
+(6, 2, 1, '3KOM40125', 'KEAMANAN DATA DAN JARINGAN', 3);
 
 -- --------------------------------------------------------
 
@@ -306,9 +317,12 @@ CREATE TABLE `unblock_requests` (
 --
 
 INSERT INTO `unblock_requests` (`id`, `user_id`, `nama`, `nim`, `alasan`, `created_at`, `status`, `processed_at`, `processed_by`) VALUES
-(5, 2, 'Mhd Ilyasyah Drilanang', '4233550027', 'test', '2025-10-09 17:34:25', 'approved', '2025-10-09 17:42:15', 1),
 (6, 2, 'Mhd Ilyasyah Drilanang', '4233550027', 'awokawok', '2025-10-10 06:27:04', 'approved', '2025-10-10 06:29:16', 1),
-(7, 2, 'Mhd Ilyasyah Drilanang', '4233550026', 'mencoba', '2025-10-13 08:31:06', 'pending', NULL, NULL);
+(7, 2, 'Mhd Ilyasyah Drilanang', '4233550026', 'mencoba', '2025-10-13 08:31:06', 'denied', '2025-10-15 02:52:00', 1),
+(8, 2, 'Mhd Ilyasyah Drilanang', '4233550027', 'coba permohonan', '2025-10-15 02:51:11', 'approved', '2025-10-15 02:52:02', 1),
+(9, 2, 'Mhd Ilyasyah Drilanang', '4233550027', 'tes', '2025-10-15 02:57:10', 'approved', '2025-10-15 02:57:58', 1),
+(10, 2, 'Mhd Ilyasyah Drilanang', '4233550027', 'saya mencoba', '2025-10-15 03:10:47', 'approved', '2025-10-16 02:15:57', 1),
+(11, 2, 'Mhd Ilyasyah Drilanang', '4233550027', 'mencoba terblokir', '2025-10-16 06:54:00', 'approved', '2025-10-16 06:54:58', 1);
 
 -- --------------------------------------------------------
 
@@ -344,13 +358,6 @@ CREATE TABLE `unblock_tokens` (
   `created_at` timestamp NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data untuk tabel `unblock_tokens`
---
-
-INSERT INTO `unblock_tokens` (`id`, `user_id`, `token`, `expires_at`, `used`, `created_at`) VALUES
-(14, 2, 'd10d8fe9375e2e49c6e47d45cb6de786576af1f9375462cb02343baad3ae08a9', '2025-10-13 08:31:06', 1, '2025-10-13 08:29:28');
-
 -- --------------------------------------------------------
 
 --
@@ -362,6 +369,8 @@ CREATE TABLE `users` (
   `username` varchar(100) NOT NULL,
   `email` varchar(100) NOT NULL,
   `password` varchar(255) NOT NULL,
+  `mfa_secret` text DEFAULT NULL,
+  `mfa_enabled` tinyint(1) NOT NULL DEFAULT 0,
   `role_id` int(11) DEFAULT NULL,
   `is_active` tinyint(1) DEFAULT 1,
   `created_at` timestamp NULL DEFAULT current_timestamp(),
@@ -373,13 +382,13 @@ CREATE TABLE `users` (
 -- Dumping data untuk tabel `users`
 --
 
-INSERT INTO `users` (`id`, `username`, `email`, `password`, `role_id`, `is_active`, `created_at`, `failed_attempts`, `blocked_at`) VALUES
-(1, 'admin', 'imeanmur@gmail.com', 'riyan2206', 1, 1, '2025-09-28 09:32:09', 0, NULL),
-(2, '4233550027', 'mdrilanang@gmail.com', 'anang2018', 3, 0, '2025-10-06 23:46:42', 3, '2025-10-13 08:29:19'),
-(3, '199002162022031003', 'dedykiswanto@unimed.ac.id', '$2y$10$zRPJbzAbQTJ8fI/MMjHrve.T9tZvzaJbDp0Q5cHydmKjxo0SsB3Ku', 2, 1, '2025-09-28 12:22:13', 0, NULL),
-(4, '4233550008', 'riyanwardhana2@gmail.com', '$2y$10$UmmHw1DXXoynJxsY6wIfGuEHOH84WjO7120Zi4yP1Tzg3HrnoPifa', 3, 1, '2025-09-28 12:28:13', 0, NULL),
-(5, '199309162022031010', 'ichwanul@unimed.ac.id', '$2y$10$LXkB3nZ0XJXaMqg0Q3PIHO1SdFZN.rH1hbLUVbM3VSvfnWpq5BUTO', 2, 1, '2025-09-28 12:36:11', 0, NULL),
-(6, '4233550123', 'anangilyasyah@gmail.com', 'ilyas123', 3, 1, '2025-10-09 12:20:46', 0, NULL);
+INSERT INTO `users` (`id`, `username`, `email`, `password`, `mfa_secret`, `mfa_enabled`, `role_id`, `is_active`, `created_at`, `failed_attempts`, `blocked_at`) VALUES
+(1, 'admin', 'imeanmur@gmail.com', 'riyan2206', NULL, 0, 1, 1, '2025-09-28 09:32:09', 0, NULL),
+(2, '4233550027', 'mdrilanang@gmail.com', 'anang2018', NULL, 0, 3, 1, '2025-10-06 23:46:42', 0, NULL),
+(3, '199002162022031003', 'dedykiswanto@unimed.ac.id', '$2y$10$zRPJbzAbQTJ8fI/MMjHrve.T9tZvzaJbDp0Q5cHydmKjxo0SsB3Ku', NULL, 0, 2, 1, '2025-09-28 12:22:13', 0, NULL),
+(4, '4233550008', 'riyanwardhana2@gmail.com', '$2y$10$UmmHw1DXXoynJxsY6wIfGuEHOH84WjO7120Zi4yP1Tzg3HrnoPifa', NULL, 0, 3, 1, '2025-09-28 12:28:13', 0, NULL),
+(5, '199309162022031010', 'ichwanul@unimed.ac.id', '$2y$10$LXkB3nZ0XJXaMqg0Q3PIHO1SdFZN.rH1hbLUVbM3VSvfnWpq5BUTO', NULL, 0, 2, 1, '2025-09-28 12:36:11', 0, NULL),
+(6, '4233550123', 'anangilyasyah@gmail.com', 'ilyas123', NULL, 0, 3, 1, '2025-10-09 12:20:46', 0, NULL);
 
 --
 -- Indexes for dumped tables
@@ -518,7 +527,7 @@ ALTER TABLE `absensi`
 -- AUTO_INCREMENT untuk tabel `audit_logs`
 --
 ALTER TABLE `audit_logs`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT untuk tabel `dosen`
@@ -542,7 +551,7 @@ ALTER TABLE `krs`
 -- AUTO_INCREMENT untuk tabel `krs_detail`
 --
 ALTER TABLE `krs_detail`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT untuk tabel `mahasiswa`
@@ -584,13 +593,13 @@ ALTER TABLE `roles`
 -- AUTO_INCREMENT untuk tabel `unblock_requests`
 --
 ALTER TABLE `unblock_requests`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT untuk tabel `unblock_tokens`
 --
 ALTER TABLE `unblock_tokens`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- AUTO_INCREMENT untuk tabel `users`

@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             resend_otp();
             list($sent, $msg) = send_otp_to_user($pdo, $_SESSION['pending_user_id']);
             $response = ['success' => $sent, 'message' => $sent ? 'Kode OTP telah berhasil dikirim ulang.' : $msg];
-        } else {
+        } else {        
             $response = ['success' => false, 'message' => 'Tunggu sebentar sebelum meminta OTP lagi.'];
         }
         echo json_encode($response);

@@ -13,24 +13,25 @@ if (!isset($_GET['jadwal_id'])) {
 $jadwal_id = $_GET['jadwal_id'];
 
 // LOGIKA SIMPAN NILAI
+require_once '../../core/dlm.php';
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_grade'])) {
-            $krs_detail_id = $_POST['krs_detail_id'];
-            $nilai_tugas = $_POST['nilai_tugas'];
-            $nilai_uts = $_POST['nilai_uts'];
-            $nilai_uas = $_POST['nilai_uas'];
+    $krs_detail_id = $_POST['krs_detail_id'];
+    $nilai_tugas = $_POST['nilai_tugas'];
+    $nilai_uts = $_POST['nilai_uts'];
+    $nilai_uas = $_POST['nilai_uas'];
 
-            // Hitung Nilai Akhir (contoh: Tugas 20%, UTS 30%, UAS 50%)
-            $nilai_akhir = ($nilai_tugas * 0.2) + ($nilai_uts * 0.3) + ($nilai_uas * 0.5);
+    // Hitung Nilai Akhir (contoh: Tugas 20%, UTS 30%, UAS 50%)
+    $nilai_akhir = ($nilai_tugas * 0.2) + ($nilai_uts * 0.3) + ($nilai_uas * 0.5);
 
-            // Tentukan Grade Huruf
-            if ($nilai_akhir >= 85) $grade_huruf = 'A';
-            elseif ($nilai_akhir >= 75) $grade_huruf = 'B';
-            elseif ($nilai_akhir >= 65) $grade_huruf = 'C';
-            elseif ($nilai_akhir >= 50) $grade_huruf = 'D';
-            else $grade_huruf = 'E';
+    // Tentukan Grade Huruf
+    if ($nilai_akhir >= 85) $grade_huruf = 'A';
+    elseif ($nilai_akhir >= 75) $grade_huruf = 'B';
+    elseif ($nilai_akhir >= 65) $grade_huruf = 'C';
+    elseif ($nilai_akhir >= 50) $grade_huruf = 'D';
+    else $grade_huruf = 'E';
 
-            // Gunakan INSERT ... ON DUPLICATE KEY UPDATE (UPSERT)
-            $stmt = $pdo->prepare("
+    // Gunakan INSERT ... ON DUPLICATE KEY UPDATE (UPSERT)
+    $stmt = $pdo->prepare("
         INSERT INTO nilai (krs_detail_id, nilai_tugas, nilai_uts, nilai_uas, nilai_akhir, grade_huruf)
         VALUES (?, ?, ?, ?, ?, ?)
         ON DUPLICATE KEY UPDATE
@@ -40,10 +41,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_grade'])) {
         nilai_akhir = VALUES(nilai_akhir),
         grade_huruf = VALUES(grade_huruf)
     ");
-            $stmt->execute([$krs_detail_id, $nilai_tugas, $nilai_uts, $nilai_uas, $nilai_akhir, $grade_huruf]);
-            $_SESSION['success_message'] = "Nilai berhasil disimpan.";
-            header("Location: " . $_SERVER['REQUEST_URI']);
-            exit();
+    $stmt->execute([$krs_detail_id, $nilai_tugas, $nilai_uts, $nilai_uas, $nilai_akhir, $grade_huruf]);
+    dlm_log_event($pdo, $_SESSION['user_id'], 'input_nilai', [
+        'krs_detail_id' => $krs_detail_id,
+        'nilai_tugas' => $nilai_tugas,
+        'nilai_uts' => $nilai_uts,
+        'nilai_uas' => $nilai_uas,
+        'nilai_akhir' => $nilai_akhir,
+        'grade_huruf' => $grade_huruf
+    ], 'nilai', $krs_detail_id);
+    $_SESSION['success_message'] = "Nilai berhasil disimpan.";
+    header("Location: " . $_SERVER['REQUEST_URI']);
+    exit();
 }
 
 // AMBIL DATA KELAS DAN MAHASISWA

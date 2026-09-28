@@ -6,27 +6,30 @@ if ($_SESSION['role'] !== 'admin') {
             exit();
 }
 
+require_once '../../core/dlm.php';
 // Proses aksi approve/deny
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'], $_POST['request_id'])) {
-            $action = $_POST['action'];
-            $requestId = (int)$_POST['request_id'];
-            if (in_array($action, ['approve', 'deny'], true)) {
-                        if ($action === 'approve') {
-                                    // Set user aktif kembali dan reset counter
-                                    $stmt = $pdo->prepare('SELECT user_id FROM unblock_requests WHERE id = :id LIMIT 1');
-                                    $stmt->execute(['id' => $requestId]);
-                                    $row = $stmt->fetch(PDO::FETCH_ASSOC);
-                                    if ($row) {
-                                                $pdo->prepare('UPDATE users SET is_active = 1, failed_attempts = 0, blocked_at = NULL WHERE id = :uid')
-                                                    ->execute(['uid' => $row['user_id']]);
-                                    }
-                                    $pdo->prepare('UPDATE unblock_requests SET status = "approved", processed_at = NOW(), processed_by = :admin WHERE id = :id')
-                                        ->execute(['admin' => $_SESSION['user_id'], 'id' => $requestId]);
-                        } else {
-                                    $pdo->prepare('UPDATE unblock_requests SET status = "denied", processed_at = NOW(), processed_by = :admin WHERE id = :id')
-                                        ->execute(['admin' => $_SESSION['user_id'], 'id' => $requestId]);
-                        }
+    $action = $_POST['action'];
+    $requestId = (int)$_POST['request_id'];
+    if (in_array($action, ['approve', 'deny'], true)) {
+        if ($action === 'approve') {
+            // Set user aktif kembali dan reset counter
+            $stmt = $pdo->prepare('SELECT user_id FROM unblock_requests WHERE id = :id LIMIT 1');
+            $stmt->execute(['id' => $requestId]);
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            if ($row) {
+                $pdo->prepare('UPDATE users SET is_active = 1, failed_attempts = 0, blocked_at = NULL WHERE id = :uid')
+                    ->execute(['uid' => $row['user_id']]);
             }
+            $pdo->prepare('UPDATE unblock_requests SET status = "approved", processed_at = NOW(), processed_by = :admin WHERE id = :id')
+                ->execute(['admin' => $_SESSION['user_id'], 'id' => $requestId]);
+            dlm_log_event($pdo, $_SESSION['user_id'], 'approve_unblock', ['request_id' => $requestId], 'unblock_request', $requestId);
+        } else {
+            $pdo->prepare('UPDATE unblock_requests SET status = "denied", processed_at = NOW(), processed_by = :admin WHERE id = :id')
+                ->execute(['admin' => $_SESSION['user_id'], 'id' => $requestId]);
+            dlm_log_event($pdo, $_SESSION['user_id'], 'deny_unblock', ['request_id' => $requestId], 'unblock_request', $requestId);
+        }
+    }
 }
 
 require_once '../../includes/sidebar.php';

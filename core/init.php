@@ -11,15 +11,32 @@ define('BASE_URL', $protocol . $host . '/' . $project_root_folder . '/');
 
 // Konfigurasi email penerima OTP (gunakan Gmail yang dikonfigurasi)
 if (!defined('OTP_DELIVERY_EMAIL')) {
-            define('OTP_DELIVERY_EMAIL', 'mdrilanang@gmail.com');
+    define('OTP_DELIVERY_EMAIL', 'mdrilanang@gmail.com');
+}
+
+// Konfigurasi SMTP Gmail (PHPMailer)
+if (!defined('SMTP_HOST')) {
+    define('SMTP_HOST', 'smtp.gmail.com');
+}
+if (!defined('SMTP_PORT')) {
+    define('SMTP_PORT', 587);
+}
+if (!defined('SMTP_USER')) {
+    define('SMTP_USER', 'mdrilanang@gmail.com'); // Alamat Gmail Pengirim
+}
+if (!defined('SMTP_PASS')) {
+    define('SMTP_PASS', 'ojtt ncmw nwru agbr'); // Masukkan 16 digit Sandi Aplikasi (App Password) Google Anda di sini
+}
+if (!defined('SMTP_FROM_NAME')) {
+    define('SMTP_FROM_NAME', 'SIAKAD');
 }
 
 // Opsional: setel pengirim email agar sesuai dengan akun Gmail SMTP Anda
 if (!defined('OTP_SENDER_EMAIL')) {
-            define('OTP_SENDER_EMAIL', 'mdrilanang@gmail.com');
+    define('OTP_SENDER_EMAIL', SMTP_USER);
 }
 if (!defined('OTP_SENDER_NAME')) {
-            define('OTP_SENDER_NAME', 'SIAKAD');
+    define('OTP_SENDER_NAME', SMTP_FROM_NAME);
 }
 
 require_once __DIR__ . '/../config/database.php';

@@ -1,6 +1,7 @@
 <?php
 // --- BAGIAN PHP KAMU (TIDAK DIUBAH) ---
 require_once 'core/init.php';
+require_once 'core/dlm.php';
 
 if (isset($_SESSION['user_id'])) {
     if ($_SESSION['role'] == 'admin') {
@@ -30,7 +31,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $stmt->execute(['username' => $username]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if ($user) {
+    if ($user) {
+        // Cek status blokir
+        if ((int)$user['is_active'] === 0 || !empty($user['blocked_at'])) {
+            $error = 'Akun Anda telah diblokir. Silakan hubungi admin atau gunakan fitur bantuan.';
+        } else {
             $storedPassword = (string)$user['password'];
             $hashInfo = password_get_info($storedPassword);
             $isPasswordValid = false;
@@ -39,8 +44,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             } else {
                 $isPasswordValid = hash_equals($storedPassword, $password);
             }
-
             if ($isPasswordValid) {
+                dlm_log_event($pdo, $user['id'], 'login', ['username' => $username, 'role' => $user['role_name']], $user['role_name'], $user['id']);
                 $pdo->prepare("UPDATE users SET failed_attempts = 0, blocked_at = NULL, is_active = 1 WHERE id = :id")
                     ->execute(['id' => $user['id']]);
 
@@ -66,9 +71,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     $error = 'Email/NIM atau password salah! Silakan coba lagi.';
                 }
             }
-        } else {
-            $error = 'Email/NIM atau password salah!';
         }
+    } else {
+        $error = 'Email/NIM atau password salah!';
+    }
     }
 }
 ?>

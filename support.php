@@ -33,15 +33,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 $subject = 'Permintaan Buka Blokir Akun SIAKAD';
                 $body = "Halo,\r\n\r\nAnda meminta untuk membuka blokir akun. Klik tautan berikut untuk memulai proses permohonan:\r\n" . $unblockLink . "\r\n\r\nTautan ini berlaku selama 1 jam. Abaikan email ini jika Anda tidak merasa memintanya.";
 
-                $fromEmail = defined('OTP_SENDER_EMAIL') ? OTP_SENDER_EMAIL : ('no-reply@' . ($_SERVER['HTTP_HOST'] ?? 'siakad.local'));
-                $fromName = defined('OTP_SENDER_NAME') ? OTP_SENDER_NAME : 'SIAKAD';
-                $headers = 'From: ' . $fromName . ' <' . $fromEmail . ">\r\n" . 'Reply-To: ' . $fromEmail . "\r\n";
-
-                if (@mail($user['email'], $subject, $body, $headers)) {
+                list($sentMail, $mailMsg) = send_siakad_email($user['email'], $subject, $body);
+                if ($sentMail) {
                     $response['success'] = true;
                     $response['message'] = 'Berhasil! Tautan pemulihan telah meluncur ke alamat email Anda.';
                 } else {
-                    $response['message'] = 'Gagal mengirim email. Silakan coba beberapa saat lagi atau hubungi admin.';
+                    $response['message'] = 'Gagal mengirim email: ' . $mailMsg;
                 }
             }
         }

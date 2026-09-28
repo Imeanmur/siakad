@@ -86,6 +86,59 @@ function resend_otp() {
 }
 
 /**
+ * Send email using PHPMailer (Gmail SMTP) if configured, with fallback to mail().
+ * Returns [bool success, string message]
+ */
+function send_siakad_email($toEmail, $subject, $bodyText) {
+	if (defined('SMTP_PASS') && !empty(SMTP_PASS)) {
+		try {
+			$mail = new \PHPMailer\PHPMailer\PHPMailer(true);
+			$mail->isSMTP();
+			$mail->Host       = defined('SMTP_HOST') ? SMTP_HOST : 'smtp.gmail.com';
+			$mail->SMTPAuth   = true;
+			$mail->Username   = defined('SMTP_USER') ? SMTP_USER : 'mdrilanang@gmail.com';
+			$mail->Password   = SMTP_PASS;
+			$mail->SMTPSecure = \PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
+			$mail->Port       = defined('SMTP_PORT') ? (int)SMTP_PORT : 587;
+
+			$fromEmail = defined('SMTP_USER') ? SMTP_USER : 'mdrilanang@gmail.com';
+			$fromName  = defined('SMTP_FROM_NAME') ? SMTP_FROM_NAME : 'SIAKAD';
+			$mail->setFrom($fromEmail, $fromName);
+			$mail->addAddress($toEmail);
+
+			$mail->isHTML(false);
+			$mail->Subject = $subject;
+			$mail->Body    = $bodyText;
+
+			$mail->send();
+			return [true, 'Kode OTP telah berhasil dikirim ke alamat email Anda.'];
+		} catch (\PHPMailer\PHPMailer\Exception $e) {
+			return [false, 'Gagal kirim via SMTP Gmail: ' . $mail->ErrorInfo];
+		} catch (\Exception $e) {
+			return [false, 'Terjadi kesalahan SMTP: ' . $e->getMessage()];
+		}
+	}
+
+	// Fallback jika belum mengisi SMTP_PASS: menggunakan mail() lokal
+	$fromEmail = defined('OTP_SENDER_EMAIL') ? OTP_SENDER_EMAIL : ('no-reply@' . ($_SERVER['HTTP_HOST'] ?? 'siakad.local'));
+	$fromName = defined('OTP_SENDER_NAME') ? OTP_SENDER_NAME : 'SIAKAD';
+	$headers = 'From: ' . $fromName . ' <' . $fromEmail . ">\r\n" .
+		'Reply-To: ' . $fromEmail . "\r\n" .
+		'MIME-Version: 1.0' . "\r\n" .
+		'Content-Type: text/plain; charset=UTF-8' . "\r\n" .
+		'X-Mailer: PHP/' . phpversion();
+	if (!empty($fromEmail)) {
+		@ini_set('sendmail_from', $fromEmail);
+	}
+	$additionalParams = !empty($fromEmail) ? ('-f ' . escapeshellarg($fromEmail)) : '';
+	$sent = @mail($toEmail, $subject, $bodyText, $headers, $additionalParams);
+	if ($sent) {
+		return [true, 'OTP telah dikirim ke email Anda.'];
+	}
+	return [false, 'Gagal mengirim email OTP.'];
+}
+
+/**
  * Send the current OTP code to the user's registered email.
  * Returns [bool success, string message]
  */
@@ -108,24 +161,10 @@ function send_otp_to_user($pdo, $userId) {
 			"Kode OTP Anda adalah: " . $code . "\r\n" .
 			"Berlaku selama 5 menit. Jangan berikan kode ini kepada siapa pun.\r\n\r\n" .
 			"- SIAKAD";
-		$fromEmail = defined('OTP_SENDER_EMAIL') ? OTP_SENDER_EMAIL : ('no-reply@' . ($_SERVER['HTTP_HOST'] ?? 'siakad.local'));
-		$fromName = defined('OTP_SENDER_NAME') ? OTP_SENDER_NAME : 'SIAKAD';
-		$headers = 'From: ' . $fromName . ' <' . $fromEmail . ">\r\n" .
-			'Reply-To: ' . $fromEmail . "\r\n" .
-			'MIME-Version: 1.0' . "\r\n" .
-			'Content-Type: text/plain; charset=UTF-8' . "\r\n" .
-			'X-Mailer: PHP/' . phpversion();
-		// Set envelope sender to align Return-Path
-		if (!empty($fromEmail)) {
-			@ini_set('sendmail_from', $fromEmail);
-		}
-		$additionalParams = !empty($fromEmail) ? ('-f ' . escapeshellarg($fromEmail)) : '';
-		$sent = @mail($email, $subject, $message, $headers, $additionalParams);
-		if ($sent) {
-			return [true, 'OTP telah dikirim ke email Anda.'];
-		}
-		return [false, 'Gagal mengirim email OTP.'];
+
+		return send_siakad_email($email, $subject, $message);
 	} catch (Exception $e) {
-		return [false, 'Terjadi kesalahan saat mengirim email OTP.'];
+		return [false, 'Terjadi kesalahan saat memproses OTP: ' . $e->getMessage()];
 	}
 }
+
