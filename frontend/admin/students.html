@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manajemen Mahasiswa - SIAKAD</title>
+    <meta name="description" content="Kelola data mahasiswa SIAKAD: tambah dan hapus mahasiswa beserta akun loginnya.">
+    <meta name="robots" content="noindex">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body data-root="../">
+    <div id="page-loader"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Memuat...</span></div></div>
+
+    <main id="page-main" class="d-none">
+        <div id="alert-area"></div>
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="fs-4 mb-0">Data Mahasiswa</h2>
+            <button type="button" class="btn btn-primary" id="btn-add"><i class="bi bi-plus-circle me-2"></i>Tambah Mahasiswa</button>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr><th>No</th><th>NIM</th><th>Nama Lengkap</th><th>Prodi</th><th>Angkatan</th><th>Email</th><th>Aksi</th></tr>
+                        </thead>
+                        <tbody id="students-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="studentModal" tabindex="-1" aria-labelledby="studentModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <form id="student-form" novalidate>
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="studentModalLabel">Form Tambah Mahasiswa</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3"><label for="s-nama" class="form-label">Nama Lengkap</label><input type="text" class="form-control" id="s-nama" name="nama_lengkap" maxlength="100" required></div>
+                            <div class="mb-3"><label for="s-nim" class="form-label">NIM</label><input type="text" class="form-control" id="s-nim" name="nim" maxlength="20" required></div>
+                            <div class="mb-3"><label for="s-jurusan" class="form-label">Prodi</label><input type="text" class="form-control" id="s-jurusan" name="jurusan" maxlength="100"></div>
+                            <div class="mb-3"><label for="s-angkatan" class="form-label">Angkatan</label><input type="number" class="form-control" id="s-angkatan" name="angkatan" min="1900" max="2100" placeholder="Contoh: 2022"></div>
+                            <div class="mb-3"><label for="s-email" class="form-label">Email</label><input type="email" class="form-control" id="s-email" name="email" maxlength="100" required></div>
+                            <div class="mb-3"><label for="s-password" class="form-label">Password</label><input type="password" class="form-control" id="s-password" name="password" autocomplete="new-password" minlength="8" maxlength="72" required><small class="form-text text-muted">Minimal 8 karakter.</small></div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                            <button type="submit" class="btn btn-primary" id="student-submit">Simpan</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteModalLabel">Konfirmasi Hapus</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                    </div>
+                    <div class="modal-body"><p class="mb-0">Yakin ingin menghapus data mahasiswa <strong id="delete-name"></strong>?</p></div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="button" class="btn btn-danger" id="delete-confirm">Ya, Hapus</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/config.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/ui.js"></script>
+    <script src="../js/layout.js"></script>
+    <script src="../js/pages/students.js"></script>
+</body>
+</html>

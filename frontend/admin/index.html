@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Admin - SIAKAD</title>
+    <meta name="description" content="Dashboard admin SIAKAD: ringkasan mahasiswa, dosen, mata kuliah, dan pengumuman terbaru.">
+    <meta name="robots" content="noindex">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body data-root="../">
+    <div id="page-loader"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Memuat...</span></div></div>
+
+    <main id="page-main" class="d-none">
+        <div id="alert-area"></div>
+
+        <div class="row g-3 my-2">
+            <div class="col-md-4">
+                <div class="stat-card p-3 bg-white shadow-sm d-flex justify-content-around align-items-center rounded">
+                    <div>
+                        <h2 class="fs-2" id="stat-mahasiswa">–</h2>
+                        <p class="fs-5 mb-0">Mahasiswa</p>
+                    </div>
+                    <i class="bi bi-people p-3 fs-1"></i>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card p-3 bg-white shadow-sm d-flex justify-content-around align-items-center rounded">
+                    <div>
+                        <h2 class="fs-2" id="stat-dosen">–</h2>
+                        <p class="fs-5 mb-0">Dosen</p>
+                    </div>
+                    <i class="bi bi-person-video3 p-3 fs-1"></i>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card p-3 bg-white shadow-sm d-flex justify-content-around align-items-center rounded">
+                    <div>
+                        <h2 class="fs-2" id="stat-matkul">–</h2>
+                        <p class="fs-5 mb-0">Mata Kuliah</p>
+                    </div>
+                    <i class="bi bi-journal-bookmark p-3 fs-1"></i>
+                </div>
+            </div>
+        </div>
+
+        <div id="pending-banner" class="alert alert-warning d-none mt-3">
+            <i class="bi bi-unlock me-2"></i>Ada <strong id="pending-count">0</strong> permohonan buka blokir menunggu.
+            <a href="unblock-requests.html" class="alert-link ms-1">Tinjau sekarang</a>
+        </div>
+
+        <div class="row my-4">
+            <h2 class="fs-4 mb-3">Pengumuman Terbaru</h2>
+            <div class="col" id="announcements"></div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/config.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/ui.js"></script>
+    <script src="../js/layout.js"></script>
+    <script src="../js/pages/dashboard.js"></script>
+</body>
+</html>

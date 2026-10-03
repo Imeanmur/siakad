@@ -3,11 +3,25 @@ session_start();
 date_default_timezone_set('Asia/Jakarta');
 require_once __DIR__ . '/../vendor/autoload.php';
 
+// --- Deteksi BASE_URL secara otomatis (tanpa hardcode nama folder) ---
+// Ini agar bekerja baik di localhost (Laragon) maupun di hosting (InfinityFree, dll.)
+
 $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
 $host = $_SERVER['HTTP_HOST'];
-$project_root_folder = 'siakad';
 
-define('BASE_URL', $protocol . $host . '/' . $project_root_folder . '/');
+// Hitung path root project dari lokasi file init.php ini (ada di /core/init.php)
+// DOCUMENT_ROOT adalah root web server, kita cari subfolder relatifnya
+$script_real = str_replace('\\', '/', __DIR__); // /path/to/siakad/core
+$doc_root    = str_replace('\\', '/', realpath($_SERVER['DOCUMENT_ROOT'])); // /path/to/htdocs
+
+// Naik satu level dari /core/ ke root project
+$project_root_real = dirname($script_real); // /path/to/siakad
+
+// Hitung path relative dari DOCUMENT_ROOT ke project root
+$relative_path = ltrim(str_replace($doc_root, '', $project_root_real), '/');
+
+// Bangun BASE_URL
+define('BASE_URL', $protocol . $host . ($relative_path ? '/' . $relative_path . '/' : '/'));
 
 // Konfigurasi email penerima OTP (gunakan Gmail yang dikonfigurasi)
 if (!defined('OTP_DELIVERY_EMAIL')) {

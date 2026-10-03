@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Input Presensi Mahasiswa - SIAKAD</title>
+    <meta name="description" content="Form absensi kehadiran mahasiswa untuk sesi pertemuan perkuliahan.">
+    <meta name="robots" content="noindex">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .form-check-inline {
+            margin-right: 1.25rem;
+            cursor: pointer;
+        }
+        .form-check-input {
+            cursor: pointer;
+        }
+        .form-check-label {
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body data-root="../">
+    <div id="page-loader"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Memuat...</span></div></div>
+
+    <main id="page-main" class="d-none">
+        <div id="alert-area"></div>
+
+        <div class="mb-3">
+            <a href="#" id="back-to-sessions" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i> Kembali ke Daftar Pertemuan
+            </a>
+        </div>
+
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-body p-4">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                    <div>
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <span class="badge bg-primary" id="course-code">-</span>
+                            <span class="badge bg-success" id="session-num">Pertemuan -</span>
+                        </div>
+                        <h2 class="fs-4 fw-bold text-dark mb-1" id="course-title">Memuat data pertemuan...</h2>
+                        <p class="text-muted small mb-0" id="session-info">-</p>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <button type="button" id="btn-all-hadir" class="btn btn-outline-success fw-semibold">
+                            <i class="bi bi-check-all me-1"></i> Semua Hadir
+                        </button>
+                        <button type="button" id="btn-save-attendance" class="btn btn-primary fw-semibold">
+                            <i class="bi bi-save me-1"></i> Simpan Presensi
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <form id="attendanceForm">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+                    <h3 class="fs-5 fw-bold mb-0">Daftar Kehadiran Mahasiswa</h3>
+                    <span class="badge bg-light text-dark border" id="student-count">0 Mahasiswa</span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 50px;" class="text-center">#</th>
+                                    <th style="width: 140px;">NIM</th>
+                                    <th>Nama Mahasiswa</th>
+                                    <th style="min-width: 320px;">Status Kehadiran</th>
+                                </tr>
+                            </thead>
+                            <tbody id="student-tbody">
+                                <tr>
+                                    <td colspan="4" class="text-center py-4 text-muted">Memuat daftar mahasiswa...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-footer bg-white border-top p-3 text-end">
+                    <button type="submit" class="btn btn-primary px-4 fw-semibold" id="btn-save-bottom">
+                        <i class="bi bi-save me-1"></i> Simpan Presensi
+                    </button>
+                </div>
+            </div>
+        </form>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/config.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/ui.js"></script>
+    <script src="../js/layout.js"></script>
+    <script src="../js/pages/dosen-detail-absensi.js"></script>
+</body>
+</html>

@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kartu Hasil Studi (KHS) - SIAKAD</title>
+    <meta name="description" content="Lihat kartu hasil studi semester dan indeks prestasi kumulatif (IPK) mahasiswa.">
+    <meta name="robots" content="noindex">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        /* Print Stylesheet Khusus untuk Dokumen Resmi KHS */
+        @media print {
+            body {
+                background: #ffffff !important;
+                font-family: 'Times New Roman', Times, serif !important;
+                color: #000000 !important;
+            }
+            #sidebar-wrapper, nav.navbar, #logout-link, .btn-print-hide, #page-loader, #alert-area {
+                display: none !important;
+            }
+            #page-content-wrapper {
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+            }
+            .container-fluid {
+                padding: 0 !important;
+            }
+            .card {
+                border: none !important;
+                box-shadow: none !important;
+            }
+            .card-header, .card-body {
+                padding: 0 !important;
+            }
+            .print-only {
+                display: block !important;
+            }
+            .table {
+                border: 1px solid #000 !important;
+                border-collapse: collapse !important;
+                width: 100% !important;
+            }
+            .table th, .table td {
+                border: 1px solid #000 !important;
+                padding: 6px 8px !important;
+                color: #000 !important;
+            }
+            .badge {
+                border: none !important;
+                background: none !important;
+                color: #000 !important;
+                font-weight: bold !important;
+                padding: 0 !important;
+            }
+        }
+        .print-only {
+            display: none;
+        }
+        .stat-gpa-box {
+            border-radius: 12px;
+            padding: 16px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+        }
+    </style>
+</head>
+<body data-root="../">
+    <div id="page-loader"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Memuat...</span></div></div>
+
+    <main id="page-main" class="d-none">
+        <div id="alert-area"></div>
+
+        <!-- Official Header saat di-Print -->
+        <div class="print-only mb-4 text-center border-bottom pb-3">
+            <h2 class="fs-4 fw-bold mb-1">UNIVERSITAS SISTEM INFORMASI AKADEMIK</h2>
+            <h3 class="fs-5 fw-bold mb-1">KARTU HASIL STUDI (KHS)</h3>
+            <p class="small mb-0" id="print-semester">Semester Ganjil - Tahun Akademik 2025/2026</p>
+        </div>
+
+        <!-- Action Header -->
+        <div class="card shadow-sm border-0 mb-4 btn-print-hide">
+            <div class="card-body p-4">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                    <div>
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <span class="badge bg-primary px-3 py-1" id="badge-semester">Tahun Ajaran 2025/2026 Ganjil</span>
+                            <span class="badge bg-success-subtle text-success">Transkrip Resmi</span>
+                        </div>
+                        <h2 class="fs-4 fw-bold text-dark mb-1">Kartu Hasil Studi (KHS)</h2>
+                        <p class="text-muted small mb-0">Rincian nilai semester aktif dan capaian indeks prestasi kumulatif.</p>
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-primary fw-semibold px-4" id="btn-print">
+                            <i class="bi bi-printer me-2"></i> Cetak KHS (PDF)
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bio Data Mahasiswa & GPA Summary -->
+        <div class="row g-3 mb-4">
+            <div class="col-lg-6">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body p-4">
+                        <h3 class="fs-6 fw-bold text-dark border-bottom pb-2 mb-3">Biodata Mahasiswa</h3>
+                        <table class="table table-borderless table-sm mb-0">
+                            <tbody>
+                                <tr>
+                                    <td style="width: 140px;" class="text-muted fw-semibold">NIM</td>
+                                    <td style="width: 15px;">:</td>
+                                    <td class="fw-bold text-dark" id="bio-nim">-</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted fw-semibold">Nama Lengkap</td>
+                                    <td>:</td>
+                                    <td class="fw-bold text-dark" id="bio-nama">-</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted fw-semibold">Program Studi</td>
+                                    <td>:</td>
+                                    <td class="fw-bold text-dark" id="bio-jurusan">-</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted fw-semibold">Tahun Akademik</td>
+                                    <td>:</td>
+                                    <td class="text-dark" id="bio-semester">2025/2026 Ganjil</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body p-4">
+                        <h3 class="fs-6 fw-bold text-dark border-bottom pb-2 mb-3">Capaian Indeks Prestasi</h3>
+                        <div class="row g-2 text-center">
+                            <div class="col-6">
+                                <div class="stat-gpa-box">
+                                    <span class="text-muted small d-block mb-1">Indeks Prestasi Semester</span>
+                                    <h4 class="fs-2 fw-bold text-primary mb-0" id="stat-ips">0.00</h4>
+                                    <small class="text-muted" id="stat-sks-sem">0 SKS</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="stat-gpa-box">
+                                    <span class="text-muted small d-block mb-1">Indeks Prestasi Kumulatif</span>
+                                    <h4 class="fs-2 fw-bold text-success mb-0" id="stat-ipk">0.00</h4>
+                                    <small class="text-muted" id="stat-sks-kum">0 SKS Kumulatif</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabel Nilai KHS -->
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+                <h3 class="fs-5 fw-bold mb-0">Rincian Nilai Semester Aktif</h3>
+                <span class="badge bg-light text-secondary border btn-print-hide" id="count-matkul">0 Mata Kuliah</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0" id="khs-table">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 50px;" class="text-center">#</th>
+                                <th style="width: 120px;">Kode MK</th>
+                                <th>Nama Mata Kuliah</th>
+                                <th style="width: 80px;" class="text-center">SKS</th>
+                                <th style="width: 110px;" class="text-center">Nilai Akhir</th>
+                                <th style="width: 90px;" class="text-center">Grade</th>
+                                <th style="width: 90px;" class="text-center">Bobot</th>
+                                <th style="width: 110px;" class="text-center">SKS &times; Bobot</th>
+                            </tr>
+                        </thead>
+                        <tbody id="khs-tbody">
+                            <tr>
+                                <td colspan="8" class="text-center py-4 text-muted">Memuat data KHS...</td>
+                            </tr>
+                        </tbody>
+                        <tfoot class="table-light fw-bold" id="khs-tfoot">
+                            <tr>
+                                <td colspan="3" class="text-end">Jumlah:</td>
+                                <td class="text-center" id="foot-sks">0</td>
+                                <td colspan="3" class="text-end">Total Bobot Semester:</td>
+                                <td class="text-center text-primary" id="foot-bobot">0.00</td>
+                            </tr>
+                            <tr>
+                                <td colspan="7" class="text-end">Indeks Prestasi Semester (IPS):</td>
+                                <td class="text-center fs-6 text-primary bg-primary-subtle" id="foot-ips">0.00</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tanda Tangan Resmi saat Dicetak -->
+        <div class="print-only mt-5">
+            <div class="row">
+                <div class="col-6 text-center">
+                    <p class="mb-1">Mengetahui,</p>
+                    <p class="fw-bold mb-5">Dosen Pembimbing Akademik</p>
+                    <p class="mb-0 text-decoration-underline">(........................................................)</p>
+                    <small>NIP/NIDN. .....................................</small>
+                </div>
+                <div class="col-6 text-center">
+                    <p class="mb-1" id="print-date">Jakarta, ..............................</p>
+                    <p class="fw-bold mb-5">Ketua Program Studi</p>
+                    <p class="mb-0 text-decoration-underline">(........................................................)</p>
+                    <small>NIP/NIDN. .....................................</small>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/config.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/ui.js"></script>
+    <script src="../js/layout.js"></script>
+    <script src="../js/pages/mhs-khs.js"></script>
+</body>
+</html>

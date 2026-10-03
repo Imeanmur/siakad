@@ -1,7 +1,7 @@
 <?php
 // --- BAGIAN PHP KAMU (TIDAK DIUBAH) ---
-require_once 'core/init.php';
-require_once 'core/dlm.php';
+require_once __DIR__ . '/core/init.php';
+require_once __DIR__ . '/core/dlm.php';
 
 if (isset($_SESSION['user_id'])) {
     if ($_SESSION['role'] == 'admin') {

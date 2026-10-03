@@ -1,0 +1,87 @@
+# ============================================================
+# .htaccess SIAKAD - Root htaccess untuk hosting Apache/InfinityFree
+# Letakkan file ini di folder 'siakad' (root project)
+# ============================================================
+
+# Aktifkan mod_rewrite
+Options +FollowSymLinks
+Options -Indexes
+RewriteEngine On
+
+# PENTING: Set base path sesuai lokasi folder di hosting
+# Jika project di root domain: RewriteBase /
+# Jika di subfolder siakad: RewriteBase /siakad/
+RewriteBase /siakad/
+
+# ============================================================
+# Keamanan: Blokir akses ke file dan folder sensitif
+# ============================================================
+<FilesMatch "\.(sql|lock|gitignore|md|log|env)$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# Blokir akses ke folder sensitif
+RewriteRule ^\.git(/|$) - [F,L]
+RewriteRule ^vendor(/|$) - [F,L]
+RewriteRule ^config(/|$) - [F,L]
+RewriteRule ^core(/|$) - [F,L]
+
+# ============================================================
+# Routing Utama
+# ============================================================
+
+# Jika file/folder NYATA ada, langsung layani (tidak perlu di-rewrite)
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Semua request lain yang tidak menemukan file → redirect ke index.php
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.php [L]
+
+# ============================================================
+# Header Keamanan HTTP
+# ============================================================
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# ============================================================
+# Konfigurasi PHP
+# ============================================================
+<IfModule mod_php8.c>
+    php_value session.cookie_httponly 1
+    php_value session.use_strict_mode 1
+    php_value display_errors 0
+    php_value log_errors 1
+    php_value error_log /logs/php_errors.log
+</IfModule>
+<IfModule mod_php7.c>
+    php_value session.cookie_httponly 1
+    php_value session.use_strict_mode 1
+    php_value display_errors 0
+    php_value log_errors 1
+</IfModule>
+
+# ============================================================
+# Kompresi & Caching (opsional, untuk performa lebih baik)
+# ============================================================
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/css application/javascript text/javascript
+</IfModule>
+
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType image/png "access plus 1 month"
+    ExpiresByType image/jpg "access plus 1 month"
+    ExpiresByType image/jpeg "access plus 1 month"
+    ExpiresByType image/gif "access plus 1 month"
+    ExpiresByType image/svg+xml "access plus 1 month"
+</IfModule>

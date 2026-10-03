@@ -1,0 +1,17 @@
+# ============================================================
+# .htaccess untuk subfolder modules
+# Mencegah akses langsung & pastikan routing benar
+# ============================================================
+
+Options -Indexes
+Options +FollowSymLinks
+
+# Keamanan: Blokir akses langsung ke folder ini tanpa file spesifik
+# (Tetap izinkan file .php diakses)
+RewriteEngine On
+RewriteBase /siakad/modules/
+
+# Jika file/folder NYATA ada, langsung layani
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
